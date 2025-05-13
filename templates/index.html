@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Grocery List</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <h1>My Grocery List</h1>
+    <form action="/add" method="POST">
+      <input type="text" name="name" placeholder="Item" required />
+      <input type="text" name="quantity" placeholder="Quantity" required />
+      <button type="submit">Add</button>
+    </form>
+    <ul>
+      {% for item in items %}
+      <li>
+        <span class="item-name">{{ item.name }}</span>
+        <span class="qty">Qty: {{ item.quantity }}</span>
+        <a href="/delete/{{ item.id }}">🗑️</a>
+      </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>

@@ -23,8 +23,8 @@
                         <li><a href="{{ url_for('create_list') }}">New List</a></li>
                         <li class="user-info">
                             <span>Welcome {{ session.username }} , </span>
-                            <a href="{{ url_for('logout') }}" class="btn btn-sm">Logout</a>
-                        </li>
+                           <a href="#" onclick="logoutUser()">Logout</a>
+ </li>
                     {% else %}
                         <li><a href="{{ url_for('login') }}">Login</a></li>
                         <li><a href="{{ url_for('register') }}">Register</a></li>
@@ -49,6 +49,18 @@
             {% block content %}{% endblock %}
         </div>
     </main>
+    <script>
+  function logoutUser() {
+    fetch("/logout")
+      .then(() => {
+        window.location.href = "/login";
+      })
+      .catch((error) => {
+        console.error("Logout failed:", error);
+      });
+  }
+</script>
+
 
     <footer>
         <div class="container footer-content">

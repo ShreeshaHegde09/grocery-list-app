@@ -3,7 +3,8 @@ from flask_migrate import Migrate
 from models import db, User, GroceryList, GroceryItem,ListShare
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from sqlalchemy.orm import joinedload
+import firebase_admin
+from firebase_admin import credentials, auth as firebase_auth
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -13,6 +14,8 @@ db.init_app(app)
 
 migrate = Migrate(app, db)  # initialize migrate
 
+cred = credentials.Certificate(r"grocery-app-1234-firebase-adminsdk-fbsvc-6c146b3319.json")
+firebase_admin.initialize_app(cred)
 
 # Create DB
 with app.app_context():
@@ -49,12 +52,47 @@ def login():
     if request.method == 'POST':
         user = User.query.filter_by(username=request.form['username']).first()
         if user and check_password_hash(user.password, request.form['password']):
+            session.permanent = True 
             session['user_id'] = user.id
             session['username'] = user.username
 
             return redirect(url_for('dashboard'))
         return "Invalid credentials"
     return render_template('login.html')
+
+
+@app.route('/sessionLogin', methods=['POST'])
+def session_login():
+    data = request.get_json()
+    id_token = data.get('idToken')
+
+    if not id_token:
+        return jsonify({'error': 'Missing ID token'}), 400
+
+    try:
+        # Verify Firebase ID token
+        decoded_token = firebase_auth.verify_id_token(id_token)
+        firebase_uid = decoded_token['uid']
+        firebase_email = decoded_token.get('email')
+
+        # Check if user exists by email
+        user = User.query.filter_by(email=firebase_email).first()
+
+        # If user doesn't exist, create one with default username
+        if not user:
+            user = User(email=firebase_email, username=firebase_email.split('@')[0])
+            db.session.add(user)
+            db.session.commit()
+
+        # Set session
+        session['user_id'] = user.id
+        session['username'] = user.username
+        return jsonify({'status': 'success'}), 200
+
+    except Exception as e:
+        print("Error verifying ID token:", str(e))
+        return jsonify({'error': 'Invalid ID token'}), 400
+
 
 @app.route('/logout')
 def logout():

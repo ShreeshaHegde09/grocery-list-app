@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import firebase_admin
 from firebase_admin import credentials, auth as firebase_auth
+import os, json
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -14,7 +15,10 @@ db.init_app(app)
 
 migrate = Migrate(app, db)  # initialize migrate
 
-cred = credentials.Certificate(r"grocery-app-1234-firebase-adminsdk-fbsvc-4903f43b65.json")
+firebase_json = os.getenv("FIREBASE_CRED")
+cred_dict = json.loads(firebase_json)
+cred = credentials.Certificate(cred_dict)
+
 firebase_admin.initialize_app(cred)
 
 # Create DB

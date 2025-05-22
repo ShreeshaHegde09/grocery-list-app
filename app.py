@@ -14,7 +14,7 @@ db.init_app(app)
 
 migrate = Migrate(app, db)  # initialize migrate
 
-cred = credentials.Certificate(r"grocery-app-1234-firebase-adminsdk-fbsvc-6c146b3319.json")
+cred = credentials.Certificate(r"grocery-app-1234-firebase-adminsdk-fbsvc-4903f43b65.json")
 firebase_admin.initialize_app(cred)
 
 # Create DB
